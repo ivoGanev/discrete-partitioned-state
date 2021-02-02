@@ -1,3 +1,4 @@
+import java.lang.IndexOutOfBoundsException
 import java.util.*
 import kotlin.jvm.Throws
 
@@ -8,8 +9,7 @@ class DiscretePartitionedState<T> {
     private var row: Int = -1
     private var col: Int = -1
 
-    private val stateRow = mutableListOf<MutableList<T>>()
-
+    private val rows = mutableListOf<MutableList<T>>()
 
     /**
      * Create a new row of stacked links
@@ -17,7 +17,7 @@ class DiscretePartitionedState<T> {
     fun push(element: T): DiscretePartitionedState<T> {
         col = 0
         row++
-        stateRow.add(LinkedList(mutableListOf(element)))
+        rows.add(LinkedList(mutableListOf(element)))
         return this
     }
 
@@ -25,64 +25,74 @@ class DiscretePartitionedState<T> {
      * Adds to the last list in the end of the stack
      * */
     fun add(element: T): DiscretePartitionedState<T> {
-        if (stateRow.isEmpty())
+        if (rows.isEmpty())
             push(element)
         else {
             col++
-            stateRow.last().add(element)
+            rows.last().add(element)
         }
         return this
-    }
-
-    @Throws(IllegalStateException::class)
-    fun hello() {
-        throw IllegalStateException("No State.")
     }
 
     /**
      * Moves the pointer left
      * */
-    @Throws(IllegalStateException::class)
     fun left(): T {
-        if (col == 0) {
-            while (row > 0) {
-                val next = --row
-                if (stateRow[next].size > 1) {
-                    col = stateRow[next].size - 2
-                    return stateRow[row][col]
+        if(rows.isEmpty())
+            throw IndexOutOfBoundsException("ERR: Trying to move through an empty row.")
+
+        var c = col
+        var r = row
+        c--
+        if (c < 0) {
+            while (r > 0) {
+                r--
+                if(r==0)
+                    throw IndexOutOfBoundsException("ERR: Trying to move out of left bounds.")
+
+                if (rows[r].size > 1) {
+                    col = rows[r].size - 2
+                    row = r
+                    break
                 }
             }
-
-            if (row == 0)
-                throw IllegalStateException("ERR: Moving beyond left bounds.")
         }
+        else { col-- }
 
-        col--
-        return stateRow[row][col]
+        return rows[row][col]
     }
 
     /**
      * Moves the pointer to the right retrieving the item
      * */
     fun right(): T {
-        // if its the last column check if we have more than 1 element
-        if (col == stateRow[row].size - 1) {
-            while (row < stateRow[row].size) {
-                if (stateRow[row].size > 1) {
+        if(rows.isEmpty())
+            throw IndexOutOfBoundsException("ERR: Trying to move through an empty row.")
+
+        var c = col
+        var r = row
+        c++
+        if(c>rows[row].size-1){
+            while(r<rows.size-1){
+                r++
+                if(r==rows.size-1)
+                    throw IndexOutOfBoundsException("ERR: Trying to move out of right bounds.")
+                if(rows[r].size > 1) {
                     col = 1
-                    return stateRow[++row][col]
+                    row = r
+                    break
                 }
             }
-            if (row == stateRow[row].size - 1)
-                throw IllegalStateException("ERR: Moving beyond right bounds.")
-        }
+        }else { col ++ }
 
-        col++
-        return stateRow[row][col]
+
+        return rows[row][col]
     }
 
     fun clear() {
-
+        row = 0
+        col = 0
+        rows.clear()
     }
 
     override fun toString(): String = buildString {
@@ -100,8 +110,8 @@ class DiscretePartitionedState<T> {
             undoNode = -1
         }
 
-        for (r in 0 until stateRow.size) {
-            for (c in 0 until stateRow[r].size) {
+        for (r in 0 until rows.size) {
+            for (c in 0 until rows[r].size) {
                 var elementText = ""
 
                 if (c == 0 && r > 0) {
@@ -109,29 +119,29 @@ class DiscretePartitionedState<T> {
                         appendAndMeasure(" ")
                 }
 
-                val e = stateRow[r][c]
+                val e = rows[r][c]
                 if (row == r && col == c)
                     elementText += "*"
                 elementText += e
 
-                if (c < stateRow[r].size - 2) {
+                if (c < rows[r].size - 2) {
                     appendAndMeasure(elementText)
                     appendAndMeasure(" <--> ")
                 } else {
                     append(elementText)
-                    if (c == stateRow[r].size - 1) {
+                    if (c == rows[r].size - 1) {
                         append(" --> [X]")
                     } else
                         append(" <--> ")
                 }
             }
 
-            if (r < stateRow.size - 1) {
+            if (r < rows.size - 1) {
                 appendLine()
                 if (undoNode > 0) {
                     for (space in 0..undoNode)
                         append(" ")
-                    if (stateRow[r].size == 1) {
+                    if (rows[r].size == 1) {
                         append("^v")
                     } else {
                         append("^")

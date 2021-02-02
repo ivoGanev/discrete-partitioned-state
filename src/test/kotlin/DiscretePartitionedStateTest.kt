@@ -1,21 +1,22 @@
 import org.junit.Before
 import org.junit.Test
 import java.lang.IllegalStateException
+import java.lang.IndexOutOfBoundsException
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class DiscretePartitionedStateTest {
-    val a = "a"
-    val ab = "ab"
-    val abc = "abc"
-    val b = "b"
-    val ba = "ba"
-    val bac = "bac"
-    val c = "c"
-    val ca = "ca"
-    val cac = "cac"
+    private val a = "a"
+    private val ab = "ab"
+    private val abc = "abc"
+    private val b = "b"
+    private val ba = "ba"
+    private val bac = "bac"
+    private val c = "c"
+    private val ca = "ca"
+    private val cac = "cac"
 
     private lateinit var path: DiscretePartitionedState<String>
 
@@ -25,88 +26,55 @@ class DiscretePartitionedStateTest {
     }
 
     @Test
-    fun `test full right and left traversal with full graph`() {
+    fun `test traversal exhaustive`() {
         with(path) {
-            add(a).add(ab).add(abc)
-            push(b).add(ba).add(bac)
-            push(c).add(ca).add(cac)
-
-            assertEquals(ca, left())
-            assertEquals(c, left())
-            assertEquals(ba, left())
-            assertEquals(b, left())
-            assertEquals(ab, left())
-            assertEquals(a, left())
-
-            println(this)
-            assertEquals(ab, right())
-            println(this)
-            assertEquals(abc, right())
-            println(this)
-            assertEquals(ba, right())
-            println(this)
-            assertEquals(bac, right())
-            println(this)
-            assertEquals(ca, right())
-            println(this)
-            assertEquals(cac, right())
-            println(this)
-
-        }
-    }
-
-    @Test
-    fun `test hello`() {
-        assertFailsWith<IllegalStateException> {   path.hello() }
-
-        try {
-            path.hello()
-            fail()
-        } catch (ex: IllegalStateException) {
-        }
-    }
-
-    @Test
-    fun `test left traversal with two single item rows`() {
-        with(path) {
-
-
+            try {
+                left()
+                fail()
+            } catch (ex: IndexOutOfBoundsException) {
+            }
             add(a)
             push(b)
+            push(c).add(ca)
+            push(a).add(ab).add(abc)
             push(c).add(ca).add(cac)
-
-            assertEquals(ca, left())
-            println(this)
-            assertEquals(c, left())
-            println(this)
-
-            assertFailsWith<IllegalStateException> { left() }
-
-            assertEquals(ca, right())
-            println(this)
-            assertEquals(cac, right())
-            println(this)
-        }
-    }
-
-
-    @Test
-    fun `test left and right traversal with stair-cased elements in rows and columns`() {
-        with(path) {
-            add(a)
+            push(ba).add(ca)
+            push(b)
+            push(c)
+            push(ab).add(abc)
             push(b).add(ba)
-            push(c).add(ca).add(cac)
+            push(a)
+            push(b)
 
-            println(this)
-            assertEquals(ca, left())
-            println(this)
-            assertEquals(c, left())
-            println(this)
             assertEquals(b, left())
+            assertEquals(ab, left())
+            assertEquals(ba, left())
+            assertEquals(ca, left())
+            assertEquals(c, left())
+            assertEquals(ab, left())
+            assertEquals(a, left())
+            assertEquals(c, left())
+            try {
+                left()
+                fail()
+            } catch (ex: IndexOutOfBoundsException) {
+            }
 
-            assertEquals(ba, right())
+            println(this)
+            assertEquals(ca, right())
+            assertEquals(ab, right())
+            assertEquals(abc, right())
             assertEquals(ca, right())
             assertEquals(cac, right())
+            assertEquals(ca, right())
+            assertEquals(abc, right())
+            assertEquals(ba, right())
+
+            try {
+                right()
+                fail()
+            } catch (ex: IndexOutOfBoundsException) {
+            }
         }
     }
 }
