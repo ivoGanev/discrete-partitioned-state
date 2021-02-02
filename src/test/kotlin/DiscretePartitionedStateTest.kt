@@ -43,6 +43,17 @@ class DiscretePartitionedStateTest {
         }
     }
 
+
+    @Test
+    fun `test exceptions with two single rows and two elements`() {
+        with(path) {
+            add(a).add(ab)
+            push(b) .add(ba)
+            assertEquals(b, left())
+            assertEquals(a, left())
+        }
+    }
+
     @Test
     fun `test empty rows`() {
         with(path) {
@@ -60,7 +71,7 @@ class DiscretePartitionedStateTest {
     }
 
     @Test
-    fun `test traversal with two rows with two elements`() {
+    fun `test traversal with two rows with three elements`() {
         with(path) {
             add(a)
             add(ab)
