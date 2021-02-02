@@ -26,6 +26,69 @@ class DiscretePartitionedStateTest {
     }
 
     @Test
+    fun `test exceptions with two single rows`() {
+        with(path) {
+            add(a)
+            push(b)
+            try {
+                left()
+                fail()
+            } catch (ex: IndexOutOfBoundsException) {
+            }
+            try {
+                right()
+                fail()
+            } catch (ex: IndexOutOfBoundsException) {
+            }
+        }
+    }
+
+    @Test
+    fun `test empty rows`() {
+        with(path) {
+            try {
+                left()
+                fail()
+            } catch (ex: IndexOutOfBoundsException) {
+            }
+            try {
+                right()
+                fail()
+            } catch (ex: IndexOutOfBoundsException) {
+            }
+        }
+    }
+
+    @Test
+    fun `test traversal with two rows with two elements`() {
+        with(path) {
+            add(a)
+            add(ab)
+            add(abc)
+            push(b)
+            add(ba)
+            add(bac)
+
+            try {
+                right()
+                fail()
+            } catch (ex: IndexOutOfBoundsException) {
+            }
+
+            assertEquals(ba, left())
+            assertEquals(b, left())
+            assertEquals(ab, left())
+            assertEquals(a, left())
+            print(this)
+            try {
+                left()
+                fail()
+            } catch (ex: IndexOutOfBoundsException) {
+            }
+        }
+    }
+
+    @Test
     fun `test traversal exhaustive`() {
         with(path) {
             try {
@@ -69,7 +132,7 @@ class DiscretePartitionedStateTest {
             assertEquals(ca, right())
             assertEquals(abc, right())
             assertEquals(ba, right())
-
+            println(this)
             try {
                 right()
                 fail()

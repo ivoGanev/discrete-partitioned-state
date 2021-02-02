@@ -1,6 +1,5 @@
 import java.lang.IndexOutOfBoundsException
 import java.util.*
-import kotlin.jvm.Throws
 
 /**
  * It's a state with partitions like { a, ab, abc } { b, ba, bac }
@@ -38,16 +37,16 @@ class DiscretePartitionedState<T> {
      * Moves the pointer left
      * */
     fun left(): T {
-        if(rows.isEmpty())
+        if (rows.isEmpty())
             throw IndexOutOfBoundsException("ERR: Trying to move through an empty row.")
 
         var c = col
         var r = row
         c--
         if (c < 0) {
-            while (r > 0) {
+            while (r >= 0) {
                 r--
-                if(r==0)
+                if (r < 0)
                     throw IndexOutOfBoundsException("ERR: Trying to move out of left bounds.")
 
                 if (rows[r].size > 1) {
@@ -56,8 +55,9 @@ class DiscretePartitionedState<T> {
                     break
                 }
             }
+        } else {
+            col--
         }
-        else { col-- }
 
         return rows[row][col]
     }
@@ -66,24 +66,26 @@ class DiscretePartitionedState<T> {
      * Moves the pointer to the right retrieving the item
      * */
     fun right(): T {
-        if(rows.isEmpty())
+        if (rows.isEmpty())
             throw IndexOutOfBoundsException("ERR: Trying to move through an empty row.")
 
         var c = col
         var r = row
         c++
-        if(c>rows[row].size-1){
-            while(r<rows.size-1){
+        if (c > rows[row].size - 1) {
+            while (r <= rows.size - 1) {
                 r++
-                if(r==rows.size-1)
+                if (r > rows.size - 1)
                     throw IndexOutOfBoundsException("ERR: Trying to move out of right bounds.")
-                if(rows[r].size > 1) {
+                if (rows[r].size > 1) {
                     col = 1
                     row = r
                     break
                 }
             }
-        }else { col ++ }
+        } else {
+            col++
+        }
 
 
         return rows[row][col]
@@ -96,63 +98,53 @@ class DiscretePartitionedState<T> {
     }
 
     override fun toString(): String = buildString {
-        appendLine("Col: $col, Row: $row")
-        var undoNode = -1
-        var measured = -1
+        val elements = mutableListOf<MutableList<Pair<Int, Int>>>()
+        //TODO: Make a beautiful display for the structure
+        var charTrack = 0
 
-        fun appendAndMeasure(string: String) {
-            undoNode += string.length
-            append(string)
-        }
-
-        fun resetMeasure() {
-            measured = undoNode
-            undoNode = -1
-        }
-
-        for (r in 0 until rows.size) {
-            for (c in 0 until rows[r].size) {
-                var elementText = ""
-
-                if (c == 0 && r > 0) {
-                    for (space in 0..measured)
-                        appendAndMeasure(" ")
+        fun printRow(row: Int) {
+            charTrack = 0
+            if (rows[row].isNotEmpty()) {
+                val e = rows[row][0]
+                elements.add(
+                    mutableListOf(
+                        Pair(charTrack, charTrack + e.toString().length)
+                    )
+                )
+                if(this@DiscretePartitionedState.row == row &&
+                        this@DiscretePartitionedState.col == 0) {
+                    append("*")
                 }
-
-                val e = rows[r][c]
-                if (row == r && col == c)
-                    elementText += "*"
-                elementText += e
-
-                if (c < rows[r].size - 2) {
-                    appendAndMeasure(elementText)
-                    appendAndMeasure(" <--> ")
-                } else {
-                    append(elementText)
-                    if (c == rows[r].size - 1) {
-                        append(" --> [X]")
-                    } else
-                        append(" <--> ")
-                }
+                append(e)
+                charTrack += e.toString().length
             }
 
-            if (r < rows.size - 1) {
-                appendLine()
-                if (undoNode > 0) {
-                    for (space in 0..undoNode)
-                        append(" ")
-                    if (rows[r].size == 1) {
-                        append("^v")
-                    } else {
-                        append("^")
+            var i = 1
+            while (i <= rows[row].size - 1) {
 
-                    }
-                    resetMeasure()
-                    appendLine()
+                val e = rows[row][i++]
+                val space = ", "
+                append(space + e)
+                if(this@DiscretePartitionedState.row == row &&
+                    this@DiscretePartitionedState.col == i-1) {
+                    append("*")
                 }
-
+                elements[row].add(Pair(charTrack + space.length, charTrack + space.length + e.toString().length))
+                charTrack += space.length + e.toString().length
             }
+            appendLine()
         }
+        if (rows.size == 0)
+            return "The structure is empty."
+        appendLine("*****                    ******")
+        appendLine("***** Partitioned States ******")
+        appendLine("***** Row: $row; Column: $col; ")
+        for (i in 0 until rows.size) {
+            append("|*| ")
+            printRow(i)
+        }
+        appendLine("|*| *********************** |*| ")
+
     }
 
 }

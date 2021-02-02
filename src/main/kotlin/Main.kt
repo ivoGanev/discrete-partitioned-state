@@ -8,13 +8,17 @@ class Main {
         @JvmStatic
         fun main(args: Array<String>) {
             val d = DiscretePartitionedState<String>()
-            try {
-                d.left()
-            }
-            catch(ex: IndexOutOfBoundsException) {
-                println(ex)
-                print(d)
-            }
+
+            d.push("Little").add("Small").add("Miniature")
+            d.push("Big").add("Huge").add("Enormous")
+            d.left()
+
+            d.left()
+            d.left()
+
+             d.left()
+             d.left()
+            println(d)
         }
     }
 }
