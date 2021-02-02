@@ -36,7 +36,7 @@ import kotlin.jvm.Throws
  * ```
  *
  * By moving once with [left] we'll get: 'you' and moving one more time left we get: 'how'.
- * Why 'how' instead of 'with'? Because we assume that 'with' is already inside the text 
+ * Why 'how' instead of 'with'? Because we assume that 'with' is already inside the text
  * and therefore we don't need to restore it again.
  *
  *
@@ -210,5 +210,4 @@ class DiscretePartitionedState<T> {
         appendLine("|*| *********************** |*| ")
 
     }
-
 }
