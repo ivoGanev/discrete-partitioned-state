@@ -76,6 +76,13 @@ class DiscretePartitionedState<T> {
         return this
     }
 
+    @Throws(IndexOutOfBoundsException::class)
+    fun current() : T {
+        if(row < 0 || col < 0)
+            throw IndexOutOfBoundsException("ERR: The data structure is empty.")
+        return rows[row][col]
+    }
+
     /**
      * Moving left starts from the bottom row retrieving the previous element before
      * the one that was added last.

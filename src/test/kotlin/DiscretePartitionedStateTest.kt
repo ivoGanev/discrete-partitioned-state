@@ -47,6 +47,12 @@ class DiscretePartitionedStateTest {
     @Test
     fun `test exceptions with two single rows and two elements`() {
         with(path) {
+            try {
+                val a = current()
+                fail()
+            }
+            catch(ex: IndexOutOfBoundsException) {
+            }
             add(a).add(ab)
             push(b) .add(ba)
             assertEquals(b, left())
@@ -74,9 +80,15 @@ class DiscretePartitionedStateTest {
     fun `test traversal with two rows with three elements`() {
         with(path) {
             add(a)
+
+            assertEquals(a, current())
             add(ab)
+            assertEquals(ab, current())
+
             add(abc)
             push(b)
+            assertEquals(b, current())
+
             add(ba)
             add(bac)
 
@@ -86,7 +98,9 @@ class DiscretePartitionedStateTest {
             } catch (ex: IndexOutOfBoundsException) {
             }
 
+            assertEquals(bac, current())
             assertEquals(ba, left())
+
             assertEquals(b, left())
             assertEquals(ab, left())
             assertEquals(a, left())
