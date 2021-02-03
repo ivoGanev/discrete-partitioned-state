@@ -163,8 +163,8 @@ class DiscretePartitionedState<T> {
      * Clears the entire structure and resets the positions to 0
      * */
     fun clear() {
-        row = 0
-        col = 0
+        row = -1
+        col = -1
         rows.clear()
     }
 
