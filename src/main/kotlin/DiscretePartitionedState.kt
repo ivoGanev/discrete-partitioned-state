@@ -1,7 +1,7 @@
+package com.ivo.ganev.dp_state
 import java.lang.IndexOutOfBoundsException
 import java.util.*
 import kotlin.jvm.Throws
-
 /**
  * The class`s main idea is to be a data structure which stores states in
  * a chained fashion which can be retrieved by moving left and right.
