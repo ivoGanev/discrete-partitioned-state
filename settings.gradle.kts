@@ -1,3 +1,3 @@
 
-rootProject.name = "testing-project"
+rootProject.name = "discrete-partitioned-state"
 
