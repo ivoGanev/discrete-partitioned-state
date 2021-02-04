@@ -27,6 +27,14 @@ class DiscretePartitionedStateTest {
     }
 
     @Test
+    fun `test is empty`() {
+        with(path) {
+            println(this)
+            assertTrue(isEmpty)
+        }
+    }
+
+    @Test
     fun `test exceptions with two single rows`() {
         with(path) {
             add(a)
@@ -49,13 +57,13 @@ class DiscretePartitionedStateTest {
     fun `test exceptions with two single rows and two elements`() {
         with(path) {
             try {
-                val a = current()
+                current()
                 fail()
-            }
-            catch(ex: IndexOutOfBoundsException) {
+            } catch (ex: IndexOutOfBoundsException) {
             }
             add(a).add(ab)
-            push(b) .add(ba)
+            push(b).add(ba)
+            println(this)
             assertEquals(b, left())
             assertEquals(a, left())
         }
@@ -136,13 +144,31 @@ class DiscretePartitionedStateTest {
             push(b)
 
             assertEquals(b, left())
+            assertEquals(ab, peekLeft())
+            assertEquals(ba, peekRight())
+
             assertEquals(ab, left())
+            assertEquals(ba, peekLeft())
+            assertEquals(abc, peekRight())
+
             assertEquals(ba, left())
+            assertEquals(ca, peekLeft())
+            assertEquals(ca, peekRight())
+
             assertEquals(ca, left())
             assertEquals(c, left())
             assertEquals(ab, left())
             assertEquals(a, left())
             assertEquals(c, left())
+
+            try {
+                peekLeft()
+                fail()
+            } catch (ex: IndexOutOfBoundsException) {
+            }
+
+            assertEquals(ca, peekRight())
+
             try {
                 left()
                 fail()

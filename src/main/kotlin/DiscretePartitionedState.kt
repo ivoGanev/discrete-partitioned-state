@@ -48,17 +48,76 @@ import kotlin.jvm.Throws
  * the pointer to the next position accordingly.
  * */
 class DiscretePartitionedState<T> {
-    private var row: Int = -1
-    private var col: Int = -1
+    private data class Position(val row: Int = -1, val col: Int = -1)
 
     private val rows = mutableListOf<MutableList<T>>()
+
+    private var position = Position()
+
+    val isEmpty: Boolean = (position.row == -1) && (position.col == -1)
+
+    private fun locateLeft() : Position {
+        if (rows.isEmpty())
+            throw IndexOutOfBoundsException("ERR: Trying to move through an empty row.")
+
+        var cTmp = position.col
+        var rTmp =  position.row
+        var c = cTmp
+        var r = rTmp
+
+        cTmp--
+        if (cTmp < 0) {
+            while (rTmp >= 0) {
+                rTmp--
+                if (rTmp < 0)
+                    throw IndexOutOfBoundsException("ERR: Trying to move out of left bounds.")
+
+                if (rows[rTmp].size > 1) {
+                    c = rows[rTmp].size - 2
+                    r = rTmp
+                    break
+                }
+            }
+        } else {
+            c--
+        }
+
+        return Position(r,c)
+    }
+
+    private fun locateRight() : Position {
+        if (rows.isEmpty())
+            throw IndexOutOfBoundsException("ERR: Trying to move through an empty row.")
+
+        var cTmp = position.col
+        var rTmp =  position.row
+        var c = cTmp
+        var r = rTmp
+
+        cTmp++
+        if (cTmp > rows[r].size - 1) {
+            while (rTmp <= rows.size - 1) {
+                rTmp++
+                if (rTmp > rows.size - 1)
+                    throw IndexOutOfBoundsException("ERR: Trying to move out of right bounds.")
+                if (rows[rTmp].size > 1) {
+                    c = 1
+                    r = rTmp
+                    break
+                }
+            }
+        } else {
+            c++
+        }
+        return Position(r,c)
+    }
 
     /**
      * Create a new row and adds the element to it.
      * */
     fun push(element: T): DiscretePartitionedState<T> {
-        col = 0
-        row++
+        val row = position.row + 1
+        position = Position(row, 0)
         rows.add(LinkedList(mutableListOf(element)))
         return this
     }
@@ -70,7 +129,9 @@ class DiscretePartitionedState<T> {
         if (rows.isEmpty())
             push(element)
         else {
-            col++
+            val row = position.row
+            val col = position.col+1
+            position = Position(row, col)
             rows.last().add(element)
         }
         return this
@@ -78,6 +139,8 @@ class DiscretePartitionedState<T> {
 
     @Throws(IndexOutOfBoundsException::class)
     fun current() : T {
+        val row= position.row
+        val col = position.col
         if(row < 0 || col < 0)
             throw IndexOutOfBoundsException("ERR: The data structure is empty.")
         return rows[row][col]
@@ -96,31 +159,18 @@ class DiscretePartitionedState<T> {
      * */
     @Throws(IndexOutOfBoundsException::class)
     fun left(): T {
-        if (rows.isEmpty())
-            throw IndexOutOfBoundsException("ERR: Trying to move through an empty row.")
-
-        var c = col
-        var r = row
-        c--
-        if (c < 0) {
-            while (r >= 0) {
-                r--
-                if (r < 0)
-                    throw IndexOutOfBoundsException("ERR: Trying to move out of left bounds.")
-
-                if (rows[r].size > 1) {
-                    col = rows[r].size - 2
-                    row = r
-                    break
-                }
-            }
-        } else {
-            col--
-        }
-
-        return rows[row][col]
+        position = locateLeft()
+        return rows[position.row][position.col]
     }
 
+    /**
+     * Will peek to the [left] without moving the pointer location
+     * */
+    @Throws(IndexOutOfBoundsException::class)
+    fun peekLeft(): T {
+        val loc = locateLeft()
+        return rows[loc.row][loc.col]
+    }
 
     /**
      * Moving right starts from the top row retrieving the next element after
@@ -133,44 +183,35 @@ class DiscretePartitionedState<T> {
      *
      * @throws IndexOutOfBoundsException when trying to move out of right bounds.
      * */
+    @Throws(IndexOutOfBoundsException::class)
     fun right(): T {
-        if (rows.isEmpty())
-            throw IndexOutOfBoundsException("ERR: Trying to move through an empty row.")
+        position= locateRight()
+        return rows[position.row][position.col]
+    }
 
-        var c = col
-        var r = row
-        c++
-        if (c > rows[row].size - 1) {
-            while (r <= rows.size - 1) {
-                r++
-                if (r > rows.size - 1)
-                    throw IndexOutOfBoundsException("ERR: Trying to move out of right bounds.")
-                if (rows[r].size > 1) {
-                    col = 1
-                    row = r
-                    break
-                }
-            }
-        } else {
-            col++
-        }
-
-
-        return rows[row][col]
+    /**
+     * Will peek to the [right] without moving the pointer location
+     * */
+    @Throws(IndexOutOfBoundsException::class)
+    fun peekRight(): T {
+        val loc = locateRight()
+        return rows[loc.row][loc.col]
     }
 
     /**
      * Clears the entire structure and resets the positions to 0
      * */
     fun clear() {
-        row = -1
-        col = -1
+        position = Position()
         rows.clear()
     }
 
     override fun toString(): String = buildString {
         val elements = mutableListOf<MutableList<Pair<Int, Int>>>()
         //TODO: Make a beautiful display for the structure
+        val currentRow = position.row
+        val currentCol = position.col
+
         var charTrack = 0
 
         fun printRow(row: Int) {
@@ -182,8 +223,8 @@ class DiscretePartitionedState<T> {
                         Pair(charTrack, charTrack + e.toString().length)
                     )
                 )
-                if(this@DiscretePartitionedState.row == row &&
-                        this@DiscretePartitionedState.col == 0) {
+                if(currentRow == row &&
+                    currentCol == 0) {
                     append("*")
                 }
                 append(e)
@@ -196,8 +237,8 @@ class DiscretePartitionedState<T> {
                 val e = rows[row][i++]
                 val space = ", "
                 append(space + e)
-                if(this@DiscretePartitionedState.row == row &&
-                    this@DiscretePartitionedState.col == i-1) {
+                if(currentRow == row &&
+                    currentCol == i-1) {
                     append("*")
                 }
                 elements[row].add(Pair(charTrack + space.length, charTrack + space.length + e.toString().length))
@@ -209,7 +250,7 @@ class DiscretePartitionedState<T> {
             return "The structure is empty."
         appendLine("*****                    ******")
         appendLine("***** Partitioned States ******")
-        appendLine("***** Row: $row; Column: $col; ")
+        appendLine("***** Row: $currentRow Column: $currentCol; ")
         for (i in 0 until rows.size) {
             append("|*| ")
             printRow(i)
